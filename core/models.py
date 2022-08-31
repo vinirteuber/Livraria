@@ -1,28 +1,43 @@
 from django.db import models
 
 
-class Marca(models.Model):
-    nome = models.CharField(max_length=50)
+class Categoria(models.Model):
+    descricao = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.descricao
+
+
+class Editora(models.Model):
+    nome = models.CharField(max_length=200)
+    site = models.URLField()
 
     def __str__(self):
         return self.nome
 
 
-class Categoria(models.Model):
-    descricao = models.CharField(max_length=100)
+class Autor(models.Model):
+    nome = models.CharField(max_length=255)
+    email = models.EmailField()
 
     def __str__(self):
-        return self.descricao
+        return self.nome
 
-class Carro(models.Model):
-    modelo = models.CharField(max_length=50)
-    marca = models.ForeignKey(Marca, on_delete=models.PROTECT, related_name="carros")
+    class Meta:
+        verbose_name_plural = "Autores"
+
+
+class Livro(models.Model):
+    titulo = models.CharField(max_length=255)
+    isbn = models.CharField(max_length=32)
+    quantidade = models.IntegerField()
+    preco = models.DecimalField(max_digits=7, decimal_places=2)
     categoria = models.ForeignKey(
-        Categoria, on_delete=models.PROTECT, related_name="carros"
+        Categoria, on_delete=models.PROTECT, related_name="livros"
     )
-    ano = models.IntegerField(null=True, blank=True)
-    cor = models.CharField(max_length=50, null=True, blank=True)
-    preco = models.FloatField(null=True, blank=True)
+    editora = models.ForeignKey(
+        Editora, on_delete=models.PROTECT, related_name="livros"
+    )
 
     def __str__(self):
-        return f"{self.marca} {self.modelo} {self.cor} ({self.ano})"
+        return f"{self.titulo} ({self.quantidade})"
