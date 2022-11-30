@@ -1,15 +1,31 @@
 import os
+import environ
 from pathlib import Path
 
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-svwd1#a+hes8us=*u3s@h*e25b79=9cwv!!-fp%^qk_k39h-1m"
+env = environ.Env()
+environ.Env.read_env((os.path.join(BASE_DIR, '.env')))
 
-DEBUG = True
+SECRET_KEY = env('SECRET_KEY')
+DEBUG = env('DEBUG')
+ALLOWED_HOSTS = env('ALLOWED_HOSTS').split(',')
+DATABASES = {'default': env.db()}
 
-ALLOWED_HOSTS = ["*"]
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+#SECRET_KEY = "django-insecure-$r@-inmu9v8#pwqe7cbto6s)@%e%043c*ju56g1o(x0xbu$i5n"
+
+# SECURITY WARNING: don't run with debug turned on in production!
+#DEBUG = True
+
+#ALLOWED_HOSTS = ["*"]
 
 
+# Application definition
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -18,9 +34,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "drf_spectacular",
     "rest_framework",
+    "rest_framework_simplejwt",
     "core",
-    "corsheaders",
+    "media",
 ]
 
 MIDDLEWARE = [
@@ -31,7 +49,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
@@ -56,14 +73,19 @@ TEMPLATES = [
 WSGI_APPLICATION = "livraria.wsgi.application"
 
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
+# Database
+# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "db.sqlite3",
+#     }
+# }
 
 
+# Password validation
+# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -81,6 +103,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+# Internationalization
+# https://docs.djangoproject.com/en/4.0/topics/i18n/
+
 LANGUAGE_CODE = "pt-br"
 
 TIME_ZONE = "America/Sao_Paulo"
@@ -90,12 +115,39 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.0/howto/static-files/
+
 STATIC_URL = "static/"
 
+# Default primary key field type
+# https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
-CORS_ALLOW_ALL_ORIGINS = True
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.DjangoModelPermissions",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# Spectacular settings
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Livraria API",
+    "DESCRIPTION": "API para gerenciamento de livraria, incluindo endpoints e documentação.",
+    "VERSION": "1.0.0",
+}
+
+AUTH_USER_MODEL = "core.Usuario"
+
+# Upload de imagens e documentos
+MEDIA_URL = "http://localhost:8000/media/"
+MEDIA_ENDPOINT = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media_files/")
+FILE_UPLOAD_PERMISSIONS = 0o640
